@@ -1,0 +1,138 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Usuários{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Gerenciar Usuários</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Usuários cadastrados</h6>
+            </div>
+            <div class="card-body">
+                {% if usuarios %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>E-mail</th>
+                                    <th>Departamento</th>
+                                    <th>Perfil</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for usuario in usuarios %}
+                                <tr>
+                                    <td>{{ usuario.nome }}</td>
+                                    <td>{{ usuario.email }}</td>
+                                    <td>{{ usuario.departamento }}</td>
+                                    <td>{{ usuario.get_status_display }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if usuario.ativo %}success{% else %}secondary{% endif %}">
+                                            {% if usuario.ativo %}Ativo{% else %}Inativo{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <form method="post" action="{% url 'alterar_status_usuario' usuario.pk %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-primary" {% if request.user == usuario.user %}disabled{% endif %}>
+                                                {% if usuario.ativo %}
+                                                    <i class="fas fa-user-slash"></i> Desativar
+                                                {% else %}
+                                                    <i class="fas fa-user-check"></i> Ativar
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Nenhum usuário cadastrado até o momento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Cadastrar novo usuário</h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                            {{ form.first_name }}
+                            {{ form.first_name.errors }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                            {{ form.last_name }}
+                            {{ form.last_name.errors }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                            {{ form.username }}
+                            {{ form.username.errors }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                            {{ form.email }}
+                            {{ form.email.errors }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                            {{ form.password1 }}
+                            {{ form.password1.errors }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                            {{ form.password2 }}
+                            {{ form.password2.errors }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.departamento.id_for_label }}">{{ form.departamento.label }}</label>
+                        {{ form.departamento }}
+                        {{ form.departamento.errors }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                        {{ form.status }}
+                        {{ form.status.errors }}
+                    </div>
+                    <div class="form-group form-check">
+                        {{ form.ativo }}
+                        <label class="form-check-label" for="{{ form.ativo.id_for_label }}">{{ form.ativo.label }}</label>
+                        {{ form.ativo.errors }}
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-user-plus"></i> Cadastrar usuário
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

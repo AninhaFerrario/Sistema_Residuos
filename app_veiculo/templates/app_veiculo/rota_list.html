@@ -1,0 +1,175 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Gestão de Rotas{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Gestão de Rotas</h1>
+    <div>
+        {% if can_manage_resources %}
+        <a href="{% url 'veiculo:rota_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Nova Rota
+        </a>
+        {% endif %}
+        <a href="{% url 'veiculo:veiculo_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-truck"></i> Veículos
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Lista de Rotas</h6>
+            </div>
+            <div class="card-body">
+                <!-- Filtros -->
+                <form method="get" class="mb-3">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <input type="text" name="search" class="form-control" placeholder="Buscar por local ou placa..." value="{{ search }}">
+                        </div>
+                        <div class="col-md-3">
+                            <select name="veiculo" class="form-control">
+                                <option value="">Todos os veículos</option>
+                                {% for veiculo in veiculos %}
+                                    <option value="{{ veiculo.pk }}" {% if veiculo_filter == veiculo.pk|stringformat:"s" %}selected{% endif %}>{{ veiculo.placa }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="concluida" class="form-control">
+                                <option value="">Todas</option>
+                                <option value="true" {% if concluida_filter == 'true' %}selected{% endif %}>Concluídas</option>
+                                <option value="false" {% if concluida_filter == 'false' %}selected{% endif %}>Pendentes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary btn-block">Filtrar</button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Tabela de Rotas -->
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Veículo</th>
+                                <th>Local</th>
+                                <th>Horário</th>
+                                <th>Dias da Semana</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rota in page_obj %}
+                            <tr>
+                                <td><strong>{{ rota.veiculo.placa }}</strong></td>
+                                <td>{{ rota.local }}</td>
+                                <td>{{ rota.horario|time:"H:i" }}</td>
+                                <td>{{ rota.dias_semana|default:"-" }}</td>
+                                <td>
+                                    <span class="badge badge-{% if rota.concluida %}success{% else %}warning{% endif %}">
+                                        {% if rota.concluida %}Concluída{% else %}Pendente{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'veiculo:rota_detail' rota.pk %}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if can_manage_resources %}
+                                        <a href="{% url 'veiculo:rota_update' rota.pk %}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-{% if rota.concluida %}secondary{% else %}success{% endif %} btn-sm toggle-rota-status" 
+                                                data-url="{% url 'veiculo:rota_toggle_status' rota.pk %}"
+                                                data-rota="{{ rota.local }}">
+                                            <i class="fas fa-{% if rota.concluida %}undo{% else %}check{% endif %}"></i>
+                                        </button>
+                                        <a href="{% url 'veiculo:rota_delete' rota.pk %}" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Nenhuma rota encontrada.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginação -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Paginação">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if veiculo_filter %}&veiculo={{ veiculo_filter }}{% endif %}{% if concluida_filter %}&concluida={{ concluida_filter }}{% endif %}{% if data_filter %}&data={{ data_filter }}{% endif %}">Primeira</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if veiculo_filter %}&veiculo={{ veiculo_filter }}{% endif %}{% if concluida_filter %}&concluida={{ concluida_filter }}{% endif %}{% if data_filter %}&data={{ data_filter }}{% endif %}">Anterior</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if veiculo_filter %}&veiculo={{ veiculo_filter }}{% endif %}{% if concluida_filter %}&concluida={{ concluida_filter }}{% endif %}{% if data_filter %}&data={{ data_filter }}{% endif %}">Próxima</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if veiculo_filter %}&veiculo={{ veiculo_filter }}{% endif %}{% if concluida_filter %}&concluida={{ concluida_filter }}{% endif %}{% if data_filter %}&data={{ data_filter }}{% endif %}">Última</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle status da rota
+document.querySelectorAll('.toggle-rota-status').forEach(button => {
+    button.addEventListener('click', function() {
+        const url = this.dataset.url;
+        const rota = this.dataset.rota;
+        
+        if (confirm(`Deseja alterar o status da rota ${rota}?`)) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao alterar status da rota');
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

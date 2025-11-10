@@ -1,0 +1,266 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{% url 'veiculo:problema_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar à Lista
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Dados do Problema</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.veiculo.id_for_label }}">{{ form.veiculo.label }}</label>
+                                    {{ form.veiculo }}
+                                    {% if form.veiculo.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.veiculo.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.rota.id_for_label }}">{{ form.rota.label }}</label>
+                                    {{ form.rota }}
+                                    {% if form.rota.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.rota.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.tipo_problema.id_for_label }}">{{ form.tipo_problema.label }}</label>
+                                    {{ form.tipo_problema }}
+                                    {% if form.tipo_problema.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.tipo_problema.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.prioridade.id_for_label }}">{{ form.prioridade.label }}</label>
+                                    {{ form.prioridade }}
+                                    {% if form.prioridade.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.prioridade.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.status.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.descricao.id_for_label }}">{{ form.descricao.label }}</label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.descricao.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.local_problema.id_for_label }}">{{ form.local_problema.label }}</label>
+                            {{ form.local_problema }}
+                            {% if form.local_problema.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.local_problema.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.data_ocorrencia.id_for_label }}">{{ form.data_ocorrencia.label }}</label>
+                                    {{ form.data_ocorrencia }}
+                                    {% if form.data_ocorrencia.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.data_ocorrencia.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.responsavel_relato.id_for_label }}">{{ form.responsavel_relato.label }}</label>
+                                    {{ form.responsavel_relato }}
+                                    {% if form.responsavel_relato.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.responsavel_relato.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.solucao.id_for_label }}">{{ form.solucao.label }}</label>
+                            {{ form.solucao }}
+                            {% if form.solucao.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.solucao.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.observacoes.id_for_label }}">{{ form.observacoes.label }}</label>
+                            {{ form.observacoes }}
+                            {% if form.observacoes.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.observacoes.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {{ button_text }}
+                            </button>
+                            <a href="{% url 'veiculo:problema_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informações</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Dicas para Cadastro:</strong></p>
+                    <ul>
+                        <li>Selecione o veículo relacionado ao problema</li>
+                        <li>Escolha o tipo de problema adequado</li>
+                        <li>Defina a prioridade corretamente</li>
+                        <li>Descreva detalhadamente o problema</li>
+                        <li>Informe o local exato da ocorrência</li>
+                        <li>Registre data e hora precisas</li>
+                    </ul>
+                    
+                    <p><strong>Tipos de Problema:</strong></p>
+                    <ul>
+                        <li><strong>Coleta sem ser feita:</strong> Quando a coleta não foi realizada</li>
+                        <li><strong>Áreas de difícil acesso:</strong> Problemas de acesso ao local</li>
+                        <li><strong>Problema mecânico:</strong> Falhas no veículo</li>
+                        <li><strong>Outros:</strong> Outros tipos de problemas</li>
+                    </ul>
+                    
+                    <p><strong>Prioridades:</strong></p>
+                    <ul>
+                        <li><strong>Urgente:</strong> Requer ação imediata</li>
+                        <li><strong>Alta:</strong> Importante, resolver em breve</li>
+                        <li><strong>Média:</strong> Normal, resolver quando possível</li>
+                        <li><strong>Baixa:</strong> Pouco urgente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Filtrar rotas baseado no veículo selecionado
+document.getElementById('id_veiculo').addEventListener('change', function() {
+    const veiculoId = this.value;
+    const rotaSelect = document.getElementById('id_rota');
+    
+    if (veiculoId) {
+        // Fazer requisição AJAX para buscar rotas do veículo
+        fetch(`/veiculos/api/rotas-veiculo/${veiculoId}/`)
+            .then(response => response.json())
+            .then(data => {
+                rotaSelect.innerHTML = '<option value="">Selecione uma rota</option>';
+                data.rotas.forEach(rota => {
+                    const option = document.createElement('option');
+                    option.value = rota.id;
+                    option.textContent = `${rota.local} - ${rota.horario}`;
+                    rotaSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar rotas:', error);
+            });
+    } else {
+        rotaSelect.innerHTML = '<option value="">Selecione um veículo primeiro</option>';
+    }
+});
+
+// Definir data atual como padrão
+document.addEventListener('DOMContentLoaded', function() {
+    const dataOcorrencia = document.getElementById('id_data_ocorrencia');
+    if (dataOcorrencia && !dataOcorrencia.value) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+        dataOcorrencia.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+});
+</script>
+{% endblock %}

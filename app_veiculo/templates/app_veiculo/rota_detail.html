@@ -1,0 +1,192 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Detalhes da Rota{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Detalhes da Rota</h1>
+    <div>
+        {% if can_manage_resources %}
+        <a href="{% url 'veiculo:rota_update' rota.pk %}" class="btn btn-warning btn-sm">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        {% endif %}
+        <a href="{% url 'veiculo:rota_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+    <div class="row">
+        <!-- Informações da Rota -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informações da Rota</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Veículo:</strong></td>
+                                    <td>{{ rota.veiculo.placa }} - {{ rota.veiculo.get_tipo_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Local:</strong></td>
+                                    <td>{{ rota.local }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Horário:</strong></td>
+                                    <td>{{ rota.horario|time:"H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Dias da Semana:</strong></td>
+                                    <td>{{ rota.dias_semana|default:"Não especificado" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if rota.concluida %}success{% else %}warning{% endif %}">
+                                            {% if rota.concluida %}Concluída{% else %}Pendente{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Cadastro:</strong></td>
+                                    <td>{{ rota.data_cadastro|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Atualização:</strong></td>
+                                    <td>{{ rota.data_atualizacao|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if rota.observacoes %}
+                    <div class="mt-4">
+                        <h6><strong>Observações:</strong></h6>
+                        <div class="alert alert-info">
+                            {{ rota.observacoes|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            {% if can_manage_resources %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ações Rápidas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <button class="btn btn-{% if rota.concluida %}secondary{% else %}success{% endif %} btn-block toggle-rota-status" 
+                                    data-url="{% url 'veiculo:rota_toggle_status' rota.pk %}"
+                                    data-rota="{{ rota.local }}">
+                                <i class="fas fa-{% if rota.concluida %}undo{% else %}check{% endif %}"></i>
+                                {% if rota.concluida %}Reabrir Rota{% else %}Marcar como Concluída{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'veiculo:rota_update' rota.pk %}" class="btn btn-warning btn-block">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'veiculo:rota_delete' rota.pk %}" class="btn btn-danger btn-block">
+                                <i class="fas fa-trash"></i> Excluir
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <a href="{% url 'veiculo:veiculo_detail' rota.veiculo.pk %}" class="btn btn-info btn-block">
+                                <i class="fas fa-truck"></i> Ver Veículo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Informações do Veículo -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Veículo</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless table-sm">
+                        <tr>
+                            <td><strong>Placa:</strong></td>
+                            <td>{{ rota.veiculo.placa }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tipo:</strong></td>
+                            <td>{{ rota.veiculo.get_tipo_display }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Número:</strong></td>
+                            <td>{{ rota.veiculo.numero_caminhao }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status:</strong></td>
+                            <td>
+                                <span class="badge badge-{% if rota.veiculo.ativo %}success{% else %}danger{% endif %}">
+                                    {% if rota.veiculo.ativo %}Ativo{% else %}Inativo{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// Toggle status da rota
+const toggleRotaButton = document.querySelector('.toggle-rota-status');
+if (toggleRotaButton) {
+    toggleRotaButton.addEventListener('click', function() {
+        const url = this.dataset.url;
+        const rota = this.dataset.rota;
+        
+        if (confirm(`Deseja alterar o status da rota ${rota}?`)) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao alterar status da rota');
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

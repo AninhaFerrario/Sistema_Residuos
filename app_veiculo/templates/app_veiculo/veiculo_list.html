@@ -1,0 +1,315 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Gestão de Veículos{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Gestão de Veículos</h1>
+    <div>
+        {% if can_manage_resources %}
+        <a href="{% url 'veiculo:veiculo_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Novo Veículo
+        </a>
+        <a href="{% url 'veiculo:rota_create' %}" class="btn btn-success btn-sm">
+            <i class="fas fa-route"></i> Nova Rota
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="veiculos-tab" data-toggle="tab" href="#veiculos" role="tab">
+                <i class="fas fa-truck"></i> Veículos
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="rotas-tab" data-toggle="tab" href="#rotas" role="tab">
+                <i class="fas fa-route"></i> Rotas
+            </a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="myTabContent">
+        <!-- Veículos Tab -->
+        <div class="tab-pane fade show active" id="veiculos" role="tabpanel">
+            <div class="card shadow mb-4 mt-3">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Lista de Veículos</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros -->
+                    <form method="get" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" name="search" class="form-control" placeholder="Buscar por placa ou número..." value="{{ search }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="tipo" class="form-control">
+                                    <option value="">Todos os tipos</option>
+                                    {% for value, label in tipos %}
+                                        <option value="{{ value }}" {% if tipo_filter == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="ativo" class="form-control">
+                                    <option value="">Todos</option>
+                                    <option value="true" {% if ativo_filter == 'true' %}selected{% endif %}>Ativos</option>
+                                    <option value="false" {% if ativo_filter == 'false' %}selected{% endif %}>Inativos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary btn-block">Filtrar</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Tabela de Veículos -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Placa</th>
+                                    <th>Tipo</th>
+                                    <th>Número</th>
+                                    <th>Status</th>
+                                    <th>Cadastro</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for veiculo in page_obj %}
+                                <tr>
+                                    <td><strong>{{ veiculo.placa }}</strong></td>
+                                    <td>{{ veiculo.get_tipo_display }}</td>
+                                    <td>{{ veiculo.numero_caminhao }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if veiculo.ativo %}success{% else %}danger{% endif %}">
+                                            {% if veiculo.ativo %}Ativo{% else %}Inativo{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ veiculo.data_cadastro|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'veiculo:veiculo_detail' veiculo.pk %}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if can_manage_resources %}
+                                            <a href="{% url 'veiculo:veiculo_update' veiculo.pk %}" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-{% if veiculo.ativo %}secondary{% else %}success{% endif %} btn-sm toggle-status" 
+                                                    data-url="{% url 'veiculo:veiculo_toggle_status' veiculo.pk %}"
+                                                    data-veiculo="{{ veiculo.placa }}">
+                                                <i class="fas fa-{% if veiculo.ativo %}pause{% else %}play{% endif %}"></i>
+                                            </button>
+                                            <a href="{% url 'veiculo:veiculo_delete' veiculo.pk %}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">Nenhum veículo encontrado.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Paginação">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if ativo_filter %}&ativo={{ ativo_filter }}{% endif %}">Primeira</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if ativo_filter %}&ativo={{ ativo_filter }}{% endif %}">Anterior</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if ativo_filter %}&ativo={{ ativo_filter }}{% endif %}">Próxima</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if ativo_filter %}&ativo={{ ativo_filter }}{% endif %}">Última</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Rotas Tab -->
+        <div class="tab-pane fade" id="rotas" role="tabpanel">
+            <div class="card shadow mb-4 mt-3">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Lista de Rotas</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros para Rotas -->
+                    <form method="get" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <input type="text" name="search" class="form-control" placeholder="Buscar por local ou placa..." value="{{ search }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="veiculo" class="form-control">
+                                    <option value="">Todos os veículos</option>
+                                    {% for veiculo in veiculos %}
+                                        <option value="{{ veiculo.pk }}" {% if veiculo_filter == veiculo.pk|stringformat:"s" %}selected{% endif %}>{{ veiculo.placa }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="date" name="data" class="form-control" value="{{ data_filter }}">
+                            </div>
+                            <div class="col-md-2">
+                                <select name="concluida" class="form-control">
+                                    <option value="">Todas</option>
+                                    <option value="true" {% if concluida_filter == 'true' %}selected{% endif %}>Concluídas</option>
+                                    <option value="false" {% if concluida_filter == 'false' %}selected{% endif %}>Pendentes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary btn-block">Filtrar</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Tabela de Rotas -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Veículo</th>
+                                    <th>Local</th>
+                                    <th>Data</th>
+                                    <th>Horário</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rota in page_obj %}
+                                <tr>
+                                    <td><strong>{{ rota.veiculo.placa }}</strong></td>
+                                    <td>{{ rota.local }}</td>
+                                    <td>{{ rota.data|date:"d/m/Y" }}</td>
+                                    <td>{{ rota.horario|time:"H:i" }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if rota.concluida %}success{% else %}warning{% endif %}">
+                                            {% if rota.concluida %}Concluída{% else %}Pendente{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'veiculo:rota_detail' rota.pk %}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if can_manage_resources %}
+                                            <a href="{% url 'veiculo:rota_update' rota.pk %}" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-{% if rota.concluida %}secondary{% else %}success{% endif %} btn-sm toggle-rota-status" 
+                                                    data-url="{% url 'veiculo:rota_toggle_status' rota.pk %}"
+                                                    data-rota="{{ rota.local }}">
+                                                <i class="fas fa-{% if rota.concluida %}undo{% else %}check{% endif %}"></i>
+                                            </button>
+                                            <a href="{% url 'veiculo:rota_delete' rota.pk %}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">Nenhuma rota encontrada.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// Toggle status do veículo
+document.querySelectorAll('.toggle-status').forEach(button => {
+    button.addEventListener('click', function() {
+        const url = this.dataset.url;
+        const veiculo = this.dataset.veiculo;
+        
+        if (confirm(`Deseja alterar o status do veículo ${veiculo}?`)) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao alterar status do veículo');
+            });
+        }
+    });
+});
+
+// Toggle status da rota
+document.querySelectorAll('.toggle-rota-status').forEach(button => {
+    button.addEventListener('click', function() {
+        const url = this.dataset.url;
+        const rota = this.dataset.rota;
+        
+        if (confirm(`Deseja alterar o status da rota ${rota}?`)) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao alterar status da rota');
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

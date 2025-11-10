@@ -1,0 +1,205 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Veículo{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Detalhes do Veículo</h1>
+    <div>
+        {% if can_manage_resources %}
+        <a href="{% url 'veiculo:veiculo_update' veiculo.pk %}" class="btn btn-warning btn-sm">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        {% endif %}
+        <a href="{% url 'veiculo:veiculo_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+    <div class="row">
+        <!-- Informações do Veículo -->
+        <div class="{% if can_manage_resources %}col-lg-6{% else %}col-lg-12{% endif %}">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informações do Veículo</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Placa:</strong></td>
+                            <td>{{ veiculo.placa }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tipo:</strong></td>
+                            <td>{{ veiculo.get_tipo_display }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Número do Caminhão:</strong></td>
+                            <td>{{ veiculo.numero_caminhao }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status:</strong></td>
+                            <td>
+                                <span class="badge badge-{% if veiculo.ativo %}success{% else %}danger{% endif %}">
+                                    {% if veiculo.ativo %}Ativo{% else %}Inativo{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Data de Cadastro:</strong></td>
+                            <td>{{ veiculo.data_cadastro|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Última Atualização:</strong></td>
+                            <td>{{ veiculo.data_atualizacao|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        {% if can_manage_resources %}
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ações Rápidas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'veiculo:rota_create' %}?veiculo={{ veiculo.pk }}" class="btn btn-success btn-block">
+                                <i class="fas fa-route"></i> Nova Rota
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-{% if veiculo.ativo %}secondary{% else %}success{% endif %} btn-block toggle-status" 
+                                    data-url="{% url 'veiculo:veiculo_toggle_status' veiculo.pk %}"
+                                    data-veiculo="{{ veiculo.placa }}">
+                                <i class="fas fa-{% if veiculo.ativo %}pause{% else %}play{% endif %}"></i>
+                                {% if veiculo.ativo %}Desativar{% else %}Ativar{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'veiculo:veiculo_update' veiculo.pk %}" class="btn btn-warning btn-block">
+                                <i class="fas fa-edit"></i> Editar Veículo
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'veiculo:veiculo_delete' veiculo.pk %}" class="btn btn-danger btn-block">
+                                <i class="fas fa-trash"></i> Excluir Veículo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Histórico de Rotas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Histórico de Rotas</h6>
+                </div>
+                <div class="card-body">
+                    {% if rotas %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Local</th>
+                                        <th>Dias</th>
+                                        <th>Horário</th>
+                                        <th>Status</th>
+                                        <th>Observações</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rota in rotas %}
+                                    <tr>
+                                        <td>{{ rota.local }}</td>
+                                        <td>{{ rota.dias_semana }}</td>
+                                        <td>{{ rota.horario|time:"H:i" }}</td>
+                                        <td>
+                                            <span class="badge badge-{% if rota.concluida %}success{% else %}warning{% endif %}">
+                                                {% if rota.concluida %}Concluída{% else %}Pendente{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>{{ rota.observacoes|truncatechars:50|default:"-" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'veiculo:rota_detail' rota.pk %}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if can_manage_resources %}
+                                                <a href="{% url 'veiculo:rota_update' rota.pk %}" class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-route fa-3x text-gray-300 mb-3"></i>
+                            <p class="text-gray-500">Nenhuma rota cadastrada para este veículo.</p>
+                            {% if can_manage_resources %}
+                            <a href="{% url 'veiculo:rota_create' %}?veiculo={{ veiculo.pk }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Cadastrar Primeira Rota
+                            </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// Toggle status do veículo
+const toggleButton = document.querySelector('.toggle-status');
+if (toggleButton) {
+    toggleButton.addEventListener('click', function() {
+        const url = this.dataset.url;
+        const veiculo = this.dataset.veiculo;
+        
+        if (confirm(`Deseja alterar o status do veículo ${veiculo}?`)) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao alterar status do veículo');
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

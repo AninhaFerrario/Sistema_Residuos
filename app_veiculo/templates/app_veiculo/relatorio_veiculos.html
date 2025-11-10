@@ -1,0 +1,199 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Relatório de Veículos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Relatório de Veículos</h1>
+        <div class="btn-group" role="group">
+            <a href="{% url 'veiculo:relatorio_servico' %}" class="btn btn-primary">
+                <i class="fas fa-chart-bar"></i> Relatório Geral
+            </a>
+            <a href="{% url 'veiculo:relatorio_veiculos' %}" class="btn btn-info">
+                <i class="fas fa-truck"></i> Relatório Veículos
+            </a>
+            <a href="{% url 'veiculo:relatorio_rotas' %}" class="btn btn-success">
+                <i class="fas fa-route"></i> Relatório Rotas
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="form-inline">
+                        <div class="form-group mr-3">
+                            <label for="tipo" class="mr-2">Tipo:</label>
+                            <select name="tipo" id="tipo" class="form-control">
+                                <option value="">Todos</option>
+                                {% for tipo_value, tipo_label in tipos %}
+                                <option value="{{ tipo_value }}" {% if tipo_filter == tipo_value %}selected{% endif %}>
+                                    {{ tipo_label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-3">
+                            <label for="status" class="mr-2">Status:</label>
+                            <select name="status" id="status" class="form-control">
+                                <option value="">Todos</option>
+                                <option value="true" {% if status_filter == 'true' %}selected{% endif %}>Ativos</option>
+                                <option value="false" {% if status_filter == 'false' %}selected{% endif %}>Inativos</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Veículos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Relatório Detalhado de Veículos</h6>
+                    <div class="btn-group" role="group">
+                        <button onclick="window.print()" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                        <button onclick="exportarExcel()" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0" id="tabelaVeiculos">
+                            <thead>
+                                <tr>
+                                    <th>Placa</th>
+                                    <th>Tipo</th>
+                                    <th>Número Caminhão</th>
+                                    <th>Status</th>
+                                    <th>Total Rotas</th>
+                                    <th>Rotas Concluídas</th>
+                                    <th>Rotas Pendentes</th>
+                                    <th>Data Cadastro</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stats in veiculos_com_stats %}
+                                <tr>
+                                    <td><strong>{{ stats.veiculo.placa }}</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if stats.veiculo.tipo == 'compactador' %}primary{% else %}info{% endif %}">
+                                            {{ stats.veiculo.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ stats.veiculo.numero_caminhao }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if stats.veiculo.ativo %}success{% else %}danger{% endif %}">
+                                            {% if stats.veiculo.ativo %}Ativo{% else %}Inativo{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ stats.total_rotas }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-success">{{ stats.rotas_concluidas }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-warning">{{ stats.rotas_pendentes }}</span>
+                                    </td>
+                                    <td>{{ stats.veiculo.data_cadastro|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'veiculo:veiculo_detail' stats.veiculo.pk %}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'veiculo:veiculo_update' stats.veiculo.pk %}" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center">Nenhum veículo encontrado</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo Estatístico -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Resumo Estatístico</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-primary">{{ veiculos_com_stats|length }}</h4>
+                                <p class="text-muted">Total de Veículos</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-success">
+                                    {% for stats in veiculos_com_stats %}
+                                        {% if stats.veiculo.ativo %}{{ forloop.counter0|add:1 }}{% endif %}
+                                    {% endfor %}
+                                </h4>
+                                <p class="text-muted">Veículos Ativos</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-info">
+                                    {% for stats in veiculos_com_stats %}
+                                        {% if stats.veiculo.tipo == 'compactador' %}{{ forloop.counter0|add:1 }}{% endif %}
+                                    {% endfor %}
+                                </h4>
+                                <p class="text-muted">Compactadores</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-warning">
+                                    {% for stats in veiculos_com_stats %}
+                                        {% if stats.veiculo.tipo == 'caçamba' %}{{ forloop.counter0|add:1 }}{% endif %}
+                                    {% endfor %}
+                                </h4>
+                                <p class="text-muted">Caçambas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportarExcel() {
+    // Implementar exportação para Excel
+    alert('Funcionalidade de exportação para Excel será implementada em breve!');
+}
+</script>
+{% endblock %}

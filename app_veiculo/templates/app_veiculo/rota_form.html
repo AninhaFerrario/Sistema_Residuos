@@ -1,0 +1,159 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}{% if is_update %}Editar{% else %}Nova{% endif %} Rota{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        {% if is_update %}Editar Rota{% else %}Nova Rota{% endif %}
+    </h1>
+    <a href="{% url 'veiculo:rota_list' %}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        {% if is_update %}Editar{% else %}Cadastrar{% endif %} Rota
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.veiculo.id_for_label }}">{{ form.veiculo.label }}</label>
+                            {{ form.veiculo }}
+                            {% if form.veiculo.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.veiculo.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.local.id_for_label }}">{{ form.local.label }}</label>
+                            {{ form.local }}
+                            {% if form.local.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.local.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.horario.id_for_label }}">{{ form.horario.label }}</label>
+                            {{ form.horario }}
+                            {% if form.horario.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.horario.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.dias_semana.id_for_label }}">{{ form.dias_semana.label }}</label>
+                            {{ form.dias_semana }}
+                            {% if form.dias_semana.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.dias_semana.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Ex: Seg, Ter, Qua ou Segunda, Terça, Quarta</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.observacoes.id_for_label }}">{{ form.observacoes.label }}</label>
+                            {{ form.observacoes }}
+                            {% if form.observacoes.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.observacoes.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                {{ form.concluida }}
+                                <label class="form-check-label" for="{{ form.concluida.id_for_label }}">
+                                    {{ form.concluida.label }}
+                                </label>
+                            </div>
+                            {% if form.concluida.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.concluida.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {% if is_update %}Atualizar{% else %}Cadastrar{% endif %}
+                            </button>
+                            <a href="{% url 'veiculo:rota_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informações</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Dicas para Cadastro:</strong></p>
+                    <ul>
+                        <li>Selecione um veículo ativo</li>
+                        <li>Informe o local exato da coleta</li>
+                        <li>Defina o horário da coleta</li>
+                        <li>Especifique os dias da semana (opcional)</li>
+                        <li>Use observações para detalhes importantes</li>
+                    </ul>
+                    
+                    <p><strong>Dias da Semana:</strong></p>
+                    <ul>
+                        <li><strong>Formato curto:</strong> Seg, Ter, Qua</li>
+                        <li><strong>Formato completo:</strong> Segunda, Terça, Quarta</li>
+                        <li><strong>Exemplos:</strong> Seg, Qua, Sex ou Segunda, Quarta, Sexta</li>
+                    </ul>
+                    
+                    <p><strong>Status da Rota:</strong></p>
+                    <ul>
+                        <li><strong>Pendente:</strong> Rota agendada</li>
+                        <li><strong>Concluída:</strong> Rota finalizada</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// Pre-selecionar veículo se passado via URL
+const urlParams = new URLSearchParams(window.location.search);
+const veiculoId = urlParams.get('veiculo');
+if (veiculoId) {
+    document.getElementById('{{ form.veiculo.id_for_label }}').value = veiculoId;
+}
+</script>
+{% endblock %}

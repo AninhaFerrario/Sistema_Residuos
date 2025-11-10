@@ -1,0 +1,253 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Relatórios de Serviço{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Relatórios de Serviço</h1>
+        <div class="btn-group" role="group">
+            <a href="{% url 'veiculo:relatorio_servico' %}" class="btn btn-primary">
+                <i class="fas fa-chart-bar"></i> Relatório Geral
+            </a>
+            <a href="{% url 'veiculo:relatorio_veiculos' %}" class="btn btn-info">
+                <i class="fas fa-truck"></i> Relatório Veículos
+            </a>
+            <a href="{% url 'veiculo:relatorio_rotas' %}" class="btn btn-success">
+                <i class="fas fa-route"></i> Relatório Rotas
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros de Período -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filtros de Período</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="form-inline">
+                        <div class="form-group mr-3">
+                            <label for="data_inicio" class="mr-2">Data Início:</label>
+                            <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="{{ data_inicio }}">
+                        </div>
+                        <div class="form-group mr-3">
+                            <label for="data_fim" class="mr-2">Data Fim:</label>
+                            <input type="date" name="data_fim" id="data_fim" class="form-control" value="{{ data_fim }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row">
+        <!-- Total de Veículos -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total de Veículos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_veiculos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-truck fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Veículos Ativos -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Veículos Ativos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ veiculos_ativos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total de Rotas -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total de Rotas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_rotas }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-route fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rotas Concluídas -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Rotas Concluídas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rotas_concluidas }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-flag-checkered fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos e Tabelas -->
+    <div class="row">
+        <!-- Veículos por Tipo -->
+        <div class="col-xl-6 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Veículos por Tipo</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Total</th>
+                                    <th>Ativos</th>
+                                    <th>Inativos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tipo in veiculos_por_tipo %}
+                                <tr>
+                                    <td>{{ tipo.tipo|title }}</td>
+                                    <td>{{ tipo.total }}</td>
+                                    <td>{{ tipo.ativos }}</td>
+                                    <td>{{ tipo.total|add:"-"|add:tipo.ativos }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Nenhum veículo cadastrado</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rotas por Veículo -->
+        <div class="col-xl-6 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Rotas por Veículo</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Veículo</th>
+                                    <th>Total</th>
+                                    <th>Concluídas</th>
+                                    <th>Pendentes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for veiculo in rotas_por_veiculo %}
+                                <tr>
+                                    <td>{{ veiculo.placa }}</td>
+                                    <td>{{ veiculo.total_rotas }}</td>
+                                    <td>{{ veiculo.rotas_concluidas }}</td>
+                                    <td>{{ veiculo.rotas_pendentes }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Nenhuma rota cadastrada</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rotas do Período -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Rotas do Período ({{ data_inicio }} a {{ data_fim }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Veículo</th>
+                                    <th>Local</th>
+                                    <th>Horário</th>
+                                    <th>Dias da Semana</th>
+                                    <th>Status</th>
+                                    <th>Data Cadastro</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rota in rotas_periodo %}
+                                <tr>
+                                    <td><strong>{{ rota.veiculo.placa }}</strong></td>
+                                    <td>{{ rota.local }}</td>
+                                    <td>{{ rota.horario|time:"H:i" }}</td>
+                                    <td>{{ rota.dias_semana|default:"-" }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if rota.concluida %}success{% else %}warning{% endif %}">
+                                            {% if rota.concluida %}Concluída{% else %}Pendente{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ rota.data_cadastro|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">Nenhuma rota encontrada no período</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

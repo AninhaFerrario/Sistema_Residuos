@@ -1,0 +1,218 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Problemas de Coleta{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Problemas de Coleta</h1>
+        {% if can_manage_resources %}
+        <a href="{% url 'veiculo:problema_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Cadastrar Problema
+        </a>
+        {% elif is_cidadao %}
+        <a href="{% url 'veiculo:problema_denuncia' %}" class="btn btn-outline-primary">
+            <i class="fas fa-bullhorn"></i> Registrar Denúncia
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="form-inline">
+                        <div class="form-group mr-3">
+                            <input type="text" name="search" class="form-control" placeholder="Buscar..." value="{{ search }}">
+                        </div>
+                        <div class="form-group mr-3">
+                            <select name="veiculo" class="form-control">
+                                <option value="">Todos os Veículos</option>
+                                {% for veiculo in veiculos %}
+                                <option value="{{ veiculo.pk }}" {% if veiculo_filter == veiculo.pk|stringformat:"s" %}selected{% endif %}>{{ veiculo.placa }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-3">
+                            <select name="tipo" class="form-control">
+                                <option value="">Todos os Tipos</option>
+                                {% for tipo_value, tipo_label in tipos %}
+                                <option value="{{ tipo_value }}" {% if tipo_filter == tipo_value %}selected{% endif %}>{{ tipo_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-3">
+                            <select name="status" class="form-control">
+                                <option value="">Todos os Status</option>
+                                {% for status_value, status_label in status_choices %}
+                                <option value="{{ status_value }}" {% if status_filter == status_value %}selected{% endif %}>{{ status_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-3">
+                            <select name="prioridade" class="form-control">
+                                <option value="">Todas as Prioridades</option>
+                                {% for prioridade_value, prioridade_label in prioridade_choices %}
+                                <option value="{{ prioridade_value }}" {% if prioridade_filter == prioridade_value %}selected{% endif %}>{{ prioridade_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Problemas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Lista de Problemas de Coleta</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Veículo</th>
+                                    <th>Prioridade</th>
+                                    <th>Status</th>
+                                    <th>Local</th>
+                                    <th>Data Ocorrência</th>
+                                    <th>Responsável</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for problema in page_obj %}
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-{% if problema.tipo_problema == 'coleta_nao_feita' %}danger{% elif problema.tipo_problema == 'area_dificil_acesso' %}warning{% elif problema.tipo_problema == 'problema_mecanico' %}info{% else %}secondary{% endif %}">
+                                            {{ problema.get_tipo_problema_display }}
+                                        </span>
+                                    </td>
+                                    <td><strong>{{ problema.veiculo.placa }}</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if problema.prioridade == 'urgente' %}danger{% elif problema.prioridade == 'alta' %}warning{% elif problema.prioridade == 'media' %}primary{% else %}success{% endif %}">
+                                            {{ problema.get_prioridade_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if problema.status == 'resolvido' %}success{% elif problema.status == 'em_andamento' %}warning{% elif problema.status == 'cancelado' %}secondary{% else %}danger{% endif %}">
+                                            {{ problema.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ problema.local_problema|truncatechars:30 }}</td>
+                                    <td>{{ problema.data_ocorrencia|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ problema.responsavel_relato }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'veiculo:problema_detail' problema.pk %}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if can_manage_resources %}
+                                            <a href="{% url 'veiculo:problema_update' problema.pk %}" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button onclick="toggleStatus({{ problema.pk }})" class="btn btn-success btn-sm">
+                                                <i class="fas fa-toggle-on"></i>
+                                            </button>
+                                            <a href="{% url 'veiculo:problema_delete' problema.pk %}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">Nenhum problema encontrado</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Navegação de páginas">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if veiculo_filter %}&veiculo={{ veiculo_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if prioridade_filter %}&prioridade={{ prioridade_filter }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if veiculo_filter %}&veiculo={{ veiculo_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if prioridade_filter %}&prioridade={{ prioridade_filter }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if veiculo_filter %}&veiculo={{ veiculo_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if prioridade_filter %}&prioridade={{ prioridade_filter }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if veiculo_filter %}&veiculo={{ veiculo_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if prioridade_filter %}&prioridade={{ prioridade_filter }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleStatus(problemaId) {
+    if (confirm('Deseja alterar o status deste problema?')) {
+        fetch(`/veiculos/problema/${problemaId}/toggle-status/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro ao alterar status: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao alterar status do problema');
+        });
+    }
+}
+</script>
+{% endblock %}

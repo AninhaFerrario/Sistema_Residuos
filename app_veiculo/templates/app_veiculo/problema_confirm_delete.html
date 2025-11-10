@@ -1,0 +1,92 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Confirmar Exclusão{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Confirmar Exclusão</h1>
+        <a href="{% url 'veiculo:problema_detail' problema.pk %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-danger text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-exclamation-triangle"></i> Atenção!
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading">Confirmação de Exclusão</h4>
+                        <p>Você está prestes a excluir permanentemente o seguinte problema de coleta:</p>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Tipo:</strong> {{ problema.get_tipo_problema_display }}</p>
+                                <p><strong>Veículo:</strong> {{ problema.veiculo.placa }}</p>
+                                <p><strong>Prioridade:</strong> {{ problema.get_prioridade_display }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Status:</strong> {{ problema.get_status_display }}</p>
+                                <p><strong>Data:</strong> {{ problema.data_ocorrencia|date:"d/m/Y H:i" }}</p>
+                                <p><strong>Responsável:</strong> {{ problema.responsavel_relato }}</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <p class="mb-0">
+                            <strong>Esta ação não pode ser desfeita!</strong><br>
+                            Todos os dados relacionados a este problema serão permanentemente removidos do sistema.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-primary">Detalhes do Problema</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Descrição:</strong></p>
+                            <p>{{ problema.descricao|linebreaks }}</p>
+                            
+                            <p><strong>Local:</strong> {{ problema.local_problema }}</p>
+                            
+                            {% if problema.rota %}
+                            <p><strong>Rota Relacionada:</strong> {{ problema.rota.local }} - {{ problema.rota.horario|time:"H:i" }}</p>
+                            {% endif %}
+                            
+                            {% if problema.solucao %}
+                            <p><strong>Solução:</strong></p>
+                            <p>{{ problema.solucao|linebreaks }}</p>
+                            {% endif %}
+                            
+                            {% if problema.observacoes %}
+                            <p><strong>Observações:</strong></p>
+                            <p>{{ problema.observacoes|linebreaks }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'veiculo:problema_detail' problema.pk %}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Confirmar Exclusão
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

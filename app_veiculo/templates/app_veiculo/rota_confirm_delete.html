@@ -1,0 +1,55 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Confirmar Exclusão da Rota{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Confirmar Exclusão</h1>
+    <a href="{% url 'veiculo:rota_list' %}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-danger">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-exclamation-triangle"></i> Atenção!
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-trash fa-3x text-danger mb-3"></i>
+                        <h4>Confirmar Exclusão da Rota</h4>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Veículo:</strong> {{ rota.veiculo.placa }} - {{ rota.veiculo.get_tipo_display }}<br>
+                        <strong>Local:</strong> {{ rota.local }}<br>
+                        <strong>Data:</strong> {{ rota.data|date:"d/m/Y" }}<br>
+                        <strong>Horário:</strong> {{ rota.horario|time:"H:i" }}
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-trash"></i> Confirmar Exclusão
+                            </button>
+                            <a href="{% url 'veiculo:rota_detail' rota.pk %}" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

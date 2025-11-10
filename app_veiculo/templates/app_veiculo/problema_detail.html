@@ -1,0 +1,241 @@
+{% extends 'app_usuario/dashboard.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Problema{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Detalhes do Problema de Coleta</h1>
+        <div class="btn-group" role="group">
+            {% if can_manage_resources %}
+            <a href="{% url 'veiculo:problema_update' problema.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+            <button onclick="toggleStatus({{ problema.pk }})" class="btn btn-success">
+                <i class="fas fa-toggle-on"></i> Alterar Status
+            </button>
+            <a href="{% url 'veiculo:problema_delete' problema.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Excluir
+            </a>
+            {% endif %}
+            <a href="{% url 'veiculo:problema_list' %}" class="btn btn-secondary">
+                <i class="fas fa-list"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informações do Problema -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informações do Problema</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tipo do Problema:</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if problema.tipo_problema == 'coleta_nao_feita' %}danger{% elif problema.tipo_problema == 'area_dificil_acesso' %}warning{% elif problema.tipo_problema == 'problema_mecanico' %}info{% else %}secondary{% endif %}">
+                                            {{ problema.get_tipo_problema_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Veículo:</strong></td>
+                                    <td>
+                                        <strong>{{ problema.veiculo.placa }}</strong> - {{ problema.veiculo.get_tipo_display }}
+                                        <br>
+                                        <small class="text-muted">Número: {{ problema.veiculo.numero_caminhao }}</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Rota:</strong></td>
+                                    <td>
+                                        {% if problema.rota %}
+                                            {{ problema.rota.local }} - {{ problema.rota.horario|time:"H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">Não especificada</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Prioridade:</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if problema.prioridade == 'urgente' %}danger{% elif problema.prioridade == 'alta' %}warning{% elif problema.prioridade == 'media' %}primary{% else %}success{% endif %}">
+                                            {{ problema.get_prioridade_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if problema.status == 'resolvido' %}success{% elif problema.status == 'em_andamento' %}warning{% elif problema.status == 'cancelado' %}secondary{% else %}danger{% endif %}">
+                                            {{ problema.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Data da Ocorrência:</strong></td>
+                                    <td>{{ problema.data_ocorrencia|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Responsável pelo Relato:</strong></td>
+                                    <td>{{ problema.responsavel_relato }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Local do Problema:</strong></td>
+                                    <td>{{ problema.local_problema }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descrição do Problema -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Descrição do Problema</h6>
+                </div>
+                <div class="card-body">
+                    <p>{{ problema.descricao|linebreaks }}</p>
+                </div>
+            </div>
+
+            <!-- Solução -->
+            {% if problema.solucao %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Solução Aplicada</h6>
+                </div>
+                <div class="card-body">
+                    <p>{{ problema.solucao|linebreaks }}</p>
+                    {% if problema.data_resolucao %}
+                    <small class="text-muted">
+                        <strong>Data da Resolução:</strong> {{ problema.data_resolucao|date:"d/m/Y H:i" }}
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Observações -->
+            {% if problema.observacoes %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Observações</h6>
+                </div>
+                <div class="card-body">
+                    <p>{{ problema.observacoes|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Informações Adicionais -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informações do Sistema</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Data de Cadastro:</strong></td>
+                            <td>{{ problema.data_cadastro|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Última Atualização:</strong></td>
+                            <td>{{ problema.data_atualizacao|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ações Rápidas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'veiculo:veiculo_detail' problema.veiculo.pk %}" class="btn btn-info">
+                            <i class="fas fa-truck"></i> Ver Veículo
+                        </a>
+                        {% if problema.rota %}
+                        <a href="{% url 'veiculo:rota_detail' problema.rota.pk %}" class="btn btn-success">
+                            <i class="fas fa-route"></i> Ver Rota
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'veiculo:problema_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-list"></i> Voltar à Lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legenda de Status -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Legenda de Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge badge-danger mr-2">Aberto</span>
+                        <small>Problema reportado, aguardando ação</small>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-warning mr-2">Em Andamento</span>
+                        <small>Problema sendo resolvido</small>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-success mr-2">Resolvido</span>
+                        <small>Problema solucionado</small>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-secondary mr-2">Cancelado</span>
+                        <small>Problema cancelado</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleStatus(problemaId) {
+    if (confirm('Deseja alterar o status deste problema?')) {
+        fetch(`/veiculos/problema/${problemaId}/toggle-status/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro ao alterar status: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao alterar status do problema');
+        });
+    }
+}
+</script>
+{% endblock %}
