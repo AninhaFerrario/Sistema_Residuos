@@ -14,7 +14,8 @@ Credenciais:
 Administrador - Login: arferrario@gmail.com 
 Gestor- Login: gmnatanael24@gmail.com
 Usuário - Login: gabriel@gmail.com
-Senha são iguais para todos : Ed109016-0
+
+Senhas iguais para todas credenciais : Ed109016-0
 
 5 - Descrição completa do sistema
 
