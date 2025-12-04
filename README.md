@@ -9,7 +9,11 @@ Documentos constando na pasta do projeto
 3 - Documento - Engenharia do Descarte
 
 4 - Link do sistema - [https://anaroberta2025.pythonanywhere.com/]
-
+Credenciais: 
+Administrador - Login: arferrario@gmail.com 
+Gestor- Login: gmnatanael24@gmail.com
+Usuário - Login: gabriel@gmail.com
+Senha são iguais para todos : Ed109016-0
 5 - Descrição completa do sistema
 
 Sistema de Gestão de Coleta de Resíduos
