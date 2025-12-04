@@ -6,7 +6,7 @@ Documentos constando na pasta do projeto
 
 2 - Banco de dados em três formatos: a - sql; b - txt; c - Modelo lógico.
 
-3 - Documento - TAP
+3 - Documento - Engenharia do Descarte
 
 4 - Link do sistema - [https://anaroberta2025.pythonanywhere.com/]
 
