@@ -12,7 +12,9 @@ Documentos constando na pasta do projeto
 
 Credenciais: 
 Administrador - Login: arferrario@gmail.com 
+
 Gestor- Login: gmnatanael24@gmail.com
+
 Usuário - Login: gabriel@gmail.com
 
 Senhas iguais para todas credenciais : Ed109016-0
